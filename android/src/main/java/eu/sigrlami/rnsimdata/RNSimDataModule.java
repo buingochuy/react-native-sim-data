@@ -3,6 +3,7 @@ package eu.sigrlami.rnsimdata;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.lang.reflect.Method;
 
 import android.content.Context;
 import android.telephony.TelephonyManager;
@@ -54,12 +55,19 @@ public class RNSimDataModule extends ReactContextBaseJavaModule {
         boolean networkRoaming   = telManager.isNetworkRoaming();
         String deviceId          = telManager.getDeviceId(simSlotIndex);
         //String deviceId          = telManager.getImei(simSlotIndex) || telManager.getMeid(simSlotIndex);
+        String imsi              = "";
+        if(sub == 0) {
+          imsi = getSim1IMSI();
+        } else {
+          imsi = getSim2IMSI();
+        }
 
         constants.put("carrierName" + sub, carrierName.toString());
         constants.put("displayName" + sub, displayName.toString());
         constants.put("countryCode" + sub, countryIso);
         constants.put("mcc" + sub, mcc);
         constants.put("mnc" + sub, mnc);
+        constants.put("imsi" + sub, imsi);
         constants.put("isNetworkRoaming" + sub, networkRoaming);
         constants.put("isDataRoaming"    + sub, (dataRoaming == 1));
         constants.put("simSlotIndex"     + sub, simSlotIndex);
@@ -74,5 +82,34 @@ public class RNSimDataModule extends ReactContextBaseJavaModule {
     }
 
     return constants;
+  }
+
+  public String getSim1IMSI() {
+    String imsi = null;
+    TelephonyManager tm = (TelephonyManager) this.reactContext.getSystemService(Context.TELEPHONY_SERVICE);
+    try {
+        Method getSubId = TelephonyManager.class.getMethod("getSubscriberId", int.class);
+        SubscriptionManager sm = (SubscriptionManager) this.reactContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+        imsi = (String) getSubId.invoke(tm, sm.getActiveSubscriptionInfoForSimSlotIndex(0).getSubscriptionId()); // Sim slot 1 IMSI
+        return imsi;
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return imsi;
+  }
+
+
+  public String getSim2IMSI() {
+      String imsi = null;
+      TelephonyManager tm = (TelephonyManager) this.reactContext.getSystemService(Context.TELEPHONY_SERVICE);
+      try {
+          Method getSubId = TelephonyManager.class.getMethod("getSubscriberId", int.class);
+          SubscriptionManager sm = (SubscriptionManager) this.reactContext.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+          imsi = (String) getSubId.invoke(tm, sm.getActiveSubscriptionInfoForSimSlotIndex(1).getSubscriptionId()); // Sim slot 2 IMSI
+          return imsi;
+      } catch (Exception e) {
+          e.printStackTrace();
+      }
+      return imsi;
   }
 }
