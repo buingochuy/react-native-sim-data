@@ -29,7 +29,7 @@ RNSimData.getSimInfo().deviceId0
   countryCode0: string;
   mcc0: string;
   mnc0: string;
-  imsi: string;
+  imsi0: string;
   isNetworkRoaming0: string;
   isDataRoaming0: string;
   simSlotIndex0: string;
